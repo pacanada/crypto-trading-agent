@@ -23,7 +23,7 @@ def execute_order_and_log(order_type, pair_name, volume, logger, print_to_stdout
                 title="Errors")
 class Config:
     pair_name = "algoeur"
-    model_dir = "/Users/pablocanadapereira/Desktop/wow_20.pickle"
+    model_dir = "../wow_20.pickle"
     threshold = 2.5
     volume = 20
 
