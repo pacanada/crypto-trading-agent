@@ -130,6 +130,18 @@ class KrakenClient(PlatformClient):
             )
         output = eval(output.replace("null", "None"))
         return output
+    def get_closed_order_from_start(self, start_id):
+        output=self.krakenapi_func(
+            sysargs=[
+                        "",
+                        "ClosedOrders",
+                        f"start={start_id}",
+            ],
+            api_private_key=self.api_private_key,
+            api_public_key=self.api_public_key
+            )
+        output = eval(output.replace("null", "None"))
+        return output
 
     
     def execute_mock_order(self, order_type, volume, pair_name):
