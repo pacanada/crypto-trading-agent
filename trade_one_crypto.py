@@ -1,4 +1,6 @@
 import time
+
+import pandas as pd
 from src.datafetch.datafetch import DataFetch
 
 from src.features.utils import feature_pipeline
@@ -56,9 +58,22 @@ def main(pair_name, model_dir, threshold, volume):
         # Make predictions
         columns_features = [col for col in df.columns if col.startswith("feature")]
         df["preds"] = model.predict(df[columns_features])
-        last_pred = df.tail(1).preds.values[0]
-        last_date = df.tail(1).date.values[0]
-        last_open = df.tail(1).open.values[0]
+        df["next_action"] = next_action
+        # introduce lag of -1 to avoid values per minute that may change
+        last_pred = df.tail(1).preds.values[0] #df.iloc[-1].preds #df.tail(1).preds.values[0]
+        last_date = df.tail(1).date.values[0] #df.iloc[-1].date #df.tail(1).date.values[0]
+        last_open = df.tail(1).open.values[0] #df.iloc[-1].open #df.tail(1).open.values[0]
+        # log
+        try:
+            df_log = pd.read_csv(f"run_{pair_name}_{threshold}_{volume}.csv")
+        except FileNotFoundError:
+            df_log = pd.DataFrame()
+            df_log.to_csv(f"run_{pair_name}_{threshold}_{volume}.csv", index=False)
+        #base_columns = ["open", "close", "low", "high", "vwap", "volume", "preds"]
+        #feature_columns = [col for col in df.columns if col.startswith("feature")]
+        df_log = pd.concat([df_log, df.tail(2)])
+        #df_log[base_columns+feature_columns]= df_log[base_columns+feature_columns].astype("float32").copy()
+        df_log.drop_duplicates().to_csv(f"run_{pair_name}_{threshold}_{volume}.csv", index=False)
         print(f"Prediction of {pair_name} for {last_date} is {last_pred}")
         print(f"Open at {last_open}")
 
@@ -83,7 +98,7 @@ def main(pair_name, model_dir, threshold, volume):
         else:
             print("No action")
 
-        time.sleep(30)
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()
