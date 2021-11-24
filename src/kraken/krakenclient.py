@@ -1,3 +1,4 @@
+import requests
 import pandas as pd
 import json
 import time
@@ -64,6 +65,48 @@ class KrakenClient(PlatformClient):
                         f"type={order_type.lower()}",
                         "ordertype=market",
                         f"volume={volume}"
+            ],
+            api_private_key=self.api_private_key,
+            api_public_key=self.api_public_key
+            )
+        
+        print(output)
+        id_order = self.get_id_order(output)
+        finalized_order = self.wait_until_fulfilled(id_order, order_type, pair_name)
+        assert finalized_order["Id"] == id_order
+        return finalized_order
+
+    def _get_order_book_response(self, pair_name, since=None, count=10):
+        resp = requests.get(f"https://api.kraken.com/0/public/Depth?pair={pair_name}&since={since}&count={count}")
+        return resp.json()
+
+    def _get_best_limit_price(self, order_type, pair_name):
+        order_book = self._get_order_book_response(pair_name)
+        if order_type=="buy":
+            # {'error': [],
+            #'result': {'XXLMZEUR': {'asks': [['0.28805700', '3104.111', 1637781170],
+            output = order_book["result"][list(order_book["result"].keys())[0]]["asks"][0][0]
+        elif order_type=="sell":
+            output = order_book["result"][list(order_book["result"].keys())[0]]["bids"][0][0]
+        return float(output)
+
+
+    def execute_limit_market_order(self, order_type, volume, pair_name):
+        """TODO: It will break when it cannot make the trade at the limit specified, 
+        it is not probably a problem for crypto with low volume of trades but still, 
+        we have to change the wait_until_ function to handle that """
+        assert order_type in ["sell", "buy"], "Unknown order_type"
+        # get best posible limit price
+        limit_price = self._get_best_limit_price(order_type=order_type, pair_name=pair_name)
+        output=self.krakenapi_func(
+            sysargs=[
+                        "",
+                        "AddOrder",
+                        f"pair={pair_name.lower()}",
+                        f"type={order_type.lower()}",
+                        "ordertype=limit",
+                        f"volume={volume}",
+                        f"price={limit_price}"
             ],
             api_private_key=self.api_private_key,
             api_public_key=self.api_public_key

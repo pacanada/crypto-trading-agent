@@ -12,10 +12,13 @@ import click
 
 def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
     try:
-        output = kraken_client.execute_order(
-            order_type=order_type,
-            volume=volume,
-            pair_name=pair_name)
+        #output = kraken_client.execute_order(
+        #    order_type=order_type,
+        #    volume=volume,
+        #    pair_name=pair_name)
+
+        output = kraken_client.execute_limit_market_order(
+            order_type=order_type, volume=volume, pair_name=pair_name)
         logger.send_message(
                 text=str(output),
                 channel="#trading-finalized-orders",
