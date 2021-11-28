@@ -33,7 +33,7 @@ def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
         )
 @click.option('--model_dir', prompt="Directory of the model")
 @click.option('--volume', type=float, prompt="Volume to trade")
-def main(pair_name, model_dir, threshold, volume):
+def main(pair_name, model_dir, volume):
 
     # config
     params={'take_profit_pct': 0.05846275948471913,
