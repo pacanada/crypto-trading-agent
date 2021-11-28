@@ -36,16 +36,17 @@ def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
 def main(pair_name, model_dir, volume):
 
     # config
-    params={'take_profit_pct': 0.05846275948471913,
-            'stop_loss_pct': 0.03918639734047897,
-            'lim_pred_buy': -9.120613163173354
-            }
+    params={'take_profit_pct': 0.05876069829164293,
+  'stop_loss_pct': 0.029986100049156885,
+  'lim_pred_buy': -8.92214825484428
+  }
 
     api_public_key = open("API_Public_Key").read().strip()
     api_private_key = open("API_Private_Key").read().strip()
     slack_url = open("slack_url").read().strip()
 
     next_action = "buy"
+    previous_price = 0
     kraken_client = KrakenClient(api_private_key=api_private_key, api_public_key=api_public_key)
     slack_client = SlackClient(slack_url)
     datafetch = DataFetch(pair_name, platform_client=kraken_client)
