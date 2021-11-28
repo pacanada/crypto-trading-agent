@@ -32,9 +32,14 @@ def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
         prompt="Pair name to trade"
         )
 @click.option('--model_dir', prompt="Directory of the model")
-@click.option('--threshold', type=float, prompt="Threshold for the model")
 @click.option('--volume', type=float, prompt="Volume to trade")
 def main(pair_name, model_dir, threshold, volume):
+
+    # config
+    params={'take_profit_pct': 0.05846275948471913,
+            'stop_loss_pct': 0.03918639734047897,
+            'lim_pred_buy': -9.120613163173354
+            }
 
     api_public_key = open("API_Public_Key").read().strip()
     api_private_key = open("API_Private_Key").read().strip()
@@ -58,9 +63,9 @@ def main(pair_name, model_dir, threshold, volume):
         df["preds"] = model.predict(df[columns_features])
         df["next_action"] = next_action
         # introduce lag of -1 to avoid values per minute that may change
-        last_pred = df.tail(1).preds.values[0] #df.iloc[-1].preds #df.tail(1).preds.values[0]
-        last_date = df.tail(1).date.values[0] #df.iloc[-1].date #df.tail(1).date.values[0]
-        last_open = df.tail(1).open.values[0] #df.iloc[-1].open #df.tail(1).open.values[0]
+        last_pred = df.iloc[-1].preds #df.tail(1).preds.values[0]
+        last_date = df.iloc[-1].date #df.tail(1).date.values[0]
+        last_open = df.iloc[-1].open #df.tail(1).open.values[0]
         # log
         try:
             df_log = pd.read_csv(f"run_{pair_name}_{threshold}_{volume}.csv")
@@ -75,7 +80,8 @@ def main(pair_name, model_dir, threshold, volume):
         print(f"Prediction of {pair_name} for {last_date} is {last_pred}")
         print(f"Open at {last_open}")
 
-        if (-last_pred > threshold) and (next_action=="buy"):
+
+        if (last_pred < params["lim_pred_buy"]) and (next_action=="buy"):
             print("Buying")
             execute_order_and_log(
                 order_type="buy",
@@ -83,15 +89,30 @@ def main(pair_name, model_dir, threshold, volume):
                 volume=volume, 
                 logger=slack_client,
                 kraken_client=kraken_client)
+
+            previous_price = last_open
             next_action = "sell"
-        elif (-last_pred < -threshold) and (next_action=="sell"):
-            print("Selling")
+            
+        elif (last_open>(1+params["take_profit_pct"])*previous_price) and (next_action=="sell"):
+            print("Selling take profit")
             execute_order_and_log(
                 order_type="sell",
                 pair_name=pair_name,
                 volume=volume, 
                 logger=slack_client,
                 kraken_client=kraken_client)
+
+            previous_price = last_open
+            next_action = "buy"
+        elif (last_open<(1-params["stop_loss_pct"])*previous_price) and (next_action=="sell"):
+            print("Selling stop loss")
+            execute_order_and_log(
+                order_type="sell",
+                pair_name=pair_name,
+                volume=volume, 
+                logger=slack_client,
+                kraken_client=kraken_client)
+            previous_price = last_open
             next_action = "buy"
         else:
             print("No action")
