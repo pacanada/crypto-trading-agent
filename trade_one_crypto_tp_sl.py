@@ -66,9 +66,9 @@ def main(pair_name, model_dir, volume):
         df["preds"] = model.predict(df[columns_features])
         df["next_action"] = next_action
         # introduce lag of -1 to avoid values per minute that may change
-        last_pred = df.iloc[-1].preds #df.tail(1).preds.values[0]
-        last_date = df.iloc[-1].date #df.tail(1).date.values[0]
-        last_open = df.iloc[-1].open #df.tail(1).open.values[0]
+        last_pred = df.iloc[-2].preds #df.tail(1).preds.values[0]
+        last_date = df.iloc[-2].date #df.tail(1).date.values[0]
+        last_open = df.iloc[-2].open #df.tail(1).open.values[0]
         # log
         try:
             df_log = pd.read_csv(f"runs/run_{pair_name}_{volume}.csv")
