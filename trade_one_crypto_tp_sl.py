@@ -34,7 +34,13 @@ def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
 @click.option('--model_dir', prompt="Directory of the model")
 @click.option('--volume', type=float, prompt="Volume to trade")
 @click.option('--next_action', type=str, prompt="Next action to execute", default="buy")
-def main(pair_name, model_dir, volume, next_action):
+@click.option(
+    '--previous_price',
+    type=str,
+    prompt="Previous price, only use with next_action=sell, otherwise it will activate take_profit",
+    default=0
+    )
+def main(pair_name, model_dir, volume, next_action, previous_price):
 
     # config
     params={'take_profit_pct': 0.05876069829164293,
@@ -48,7 +54,6 @@ def main(pair_name, model_dir, volume, next_action):
     api_private_key = open("API_Private_Key").read().strip()
     slack_url = open("slack_url").read().strip()
 
-    previous_price = 0
     kraken_client = KrakenClient(api_private_key=api_private_key, api_public_key=api_public_key)
     slack_client = SlackClient(slack_url)
     datafetch = DataFetch(pair_name, platform_client=kraken_client)
