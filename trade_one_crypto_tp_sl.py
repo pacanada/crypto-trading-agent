@@ -33,7 +33,8 @@ def execute_order_and_log(order_type, pair_name, volume, logger, kraken_client):
         )
 @click.option('--model_dir', prompt="Directory of the model")
 @click.option('--volume', type=float, prompt="Volume to trade")
-def main(pair_name, model_dir, volume):
+@click.option('--next_action', type=str, prompt="Next action to execute", default="buy")
+def main(pair_name, model_dir, volume, next_action):
 
     # config
     params={'take_profit_pct': 0.05876069829164293,
@@ -47,7 +48,6 @@ def main(pair_name, model_dir, volume):
     api_private_key = open("API_Private_Key").read().strip()
     slack_url = open("slack_url").read().strip()
 
-    next_action = "buy"
     previous_price = 0
     kraken_client = KrakenClient(api_private_key=api_private_key, api_public_key=api_public_key)
     slack_client = SlackClient(slack_url)
