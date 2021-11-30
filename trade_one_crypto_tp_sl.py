@@ -77,7 +77,7 @@ def main(pair_name, model_dir, volume):
             df_log.to_csv(f"runs/run_{pair_name}_{volume}.csv", index=False)
 
         #feature_columns = [col for col in df.columns if col.startswith("feature")]
-        df_log = pd.concat([df_log, df[[base_columns]].tail(2)])
+        df_log = pd.concat([df_log, df[base_columns].tail(2)])
         #df_log[base_columns+feature_columns]= df_log[base_columns+feature_columns].astype("float32").copy()
         df_log.drop_duplicates().to_csv(f"runs/run_{pair_name}_{volume}.csv", index=False)
         print(f"Prediction of {pair_name} for {last_date} is {last_pred}")
