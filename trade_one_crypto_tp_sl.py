@@ -40,6 +40,8 @@ def main(pair_name, model_dir, volume):
   'stop_loss_pct': 0.029986100049156885,
   'lim_pred_buy': -8.92214825484428
   }
+    
+    base_columns = ["date", "open", "close", "low", "high", "vwap", "volume", "preds"]
 
     api_public_key = open("API_Public_Key").read().strip()
     api_private_key = open("API_Private_Key").read().strip()
@@ -69,15 +71,15 @@ def main(pair_name, model_dir, volume):
         last_open = df.iloc[-1].open #df.tail(1).open.values[0]
         # log
         try:
-            df_log = pd.read_csv(f"run_{pair_name}_{volume}.csv")
+            df_log = pd.read_csv(f"runs/run_{pair_name}_{volume}.csv")
         except FileNotFoundError:
             df_log = pd.DataFrame()
-            df_log.to_csv(f"run_{pair_name}_{volume}.csv", index=False)
-        #base_columns = ["open", "close", "low", "high", "vwap", "volume", "preds"]
+            df_log.to_csv(f"runs/run_{pair_name}_{volume}.csv", index=False)
+
         #feature_columns = [col for col in df.columns if col.startswith("feature")]
-        df_log = pd.concat([df_log, df.tail(2)])
+        df_log = pd.concat([df_log, df[[base_columns]].tail(2)])
         #df_log[base_columns+feature_columns]= df_log[base_columns+feature_columns].astype("float32").copy()
-        df_log.drop_duplicates().to_csv(f"run_{pair_name}_{volume}.csv", index=False)
+        df_log.drop_duplicates().to_csv(f"runs/run_{pair_name}_{volume}.csv", index=False)
         print(f"Prediction of {pair_name} for {last_date} is {last_pred}")
         print(f"Open at {last_open}")
 
