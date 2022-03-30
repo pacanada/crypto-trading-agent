@@ -131,3 +131,5 @@ dmypy.json
 API_Private_Key
 API_Public_Key
 slack_url
+
+.DS_Store
